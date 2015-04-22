@@ -1,0 +1,10 @@
+section {
+  position: relative;
+  margin: auto;
+  width: 300px;
+  height: 300px;
+  background: #ff00ff;
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+}

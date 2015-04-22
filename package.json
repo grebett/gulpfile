@@ -1,0 +1,20 @@
+{
+  "name": "myGulpfile",
+  "version": "1.0.0",
+  "description": "grebett's gulpfile.js",
+  "devDependencies": {
+    "browser-sync": "^2.6.4",
+    "chalk": "^1.0.0",
+    "gulp": "^3.8.11",
+    "gulp-babel": "^5.1.0",
+    "gulp-compass": "^2.0.4",
+    "gulp-plumber": "^1.0.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-watch": "^4.2.4"
+  },
+  "scripts": {
+    "test": "echo \"No test specified\" && exit 1"
+  },
+  "author": "grebett",
+  "license": "ISC"
+}
