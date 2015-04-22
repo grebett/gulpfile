@@ -20,8 +20,11 @@
 var gulp = require('gulp');
 var babel = require('gulp-babel');
 var compass = require('gulp-compass');
+var minify = require('gulp-minify-css');
 var plumber = require('gulp-plumber');
 var rename = require('gulp-rename');
+var sourcemaps = require('gulp-sourcemaps');
+var uglify = require('gulp-uglify');
 var watch = require('gulp-watch');
 
 var chalk = require('chalk');
@@ -60,15 +63,33 @@ gulp.task('babel', function () {
 
 gulp.task('compass', ['html'], function () {
   return gulp
-    .src('./sass/*.scss')
+    .src('sass/*.scss')
     .pipe(plumber())
     .pipe(compass({
-      config_file: './config.rb',
+      config_file: 'config.rb',
       css: 'css',
       sass: 'sass'
     }))
     .pipe(gulp.dest('./css'))
     .pipe(reload({stream: true}));
+});
+
+gulp.task('minify', function() {
+  return gulp
+    .src('css/*.css')
+    .pipe(sourcemaps.init())
+    .pipe(minify())
+    .pipe(sourcemaps.write('../maps'))
+    .pipe(gulp.dest('build/css'));
+});
+
+gulp.task('uglify', function() {
+  return gulp
+    .src(['js/*.js', '!js/*.es6.js'])
+    .pipe(sourcemaps.init())
+    .pipe(uglify())
+    .pipe(sourcemaps.write('../maps'))
+    .pipe(gulp.dest('build/js'));
 });
 
 // ╔════════════════════════════════╗
@@ -93,6 +114,14 @@ gulp.task('watch', function () {
       gulp.watch(watched[i].files, watched[i].tasks);
     }
   })(watched);
+});
+
+// ╔════════════════════════════════╗
+// ║                 Build                  ║
+// ╚════════════════════════════════╝
+
+gulp.task('build', ['minify', 'uglify'], function () {
+  console.log(chalk.yellow('/!\\') + ' build should be completed later.');
 });
 
 // ╔════════════════════════════════╗
