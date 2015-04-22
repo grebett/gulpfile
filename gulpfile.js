@@ -19,7 +19,9 @@
 
 var gulp = require('gulp');
 var babel = require('gulp-babel');
+var bower = require('main-bower-files');
 var compass = require('gulp-compass');
+var inject = require('gulp-inject');
 var minify = require('gulp-minify-css');
 var plumber = require('gulp-plumber');
 var rename = require('gulp-rename');
@@ -90,6 +92,17 @@ gulp.task('uglify', function() {
     .pipe(uglify())
     .pipe(sourcemaps.write('../maps'))
     .pipe(gulp.dest('build/js'));
+});
+
+gulp.task('inject', function () {
+  var target = gulp.src('index.html');
+  var src = gulp.src(['css/*.css', 'js/*.js', '!js/*.es6.js'], {read: false});
+  var bowerFiles = gulp.src(bower(), {read: false});
+
+  return target
+    .pipe(inject(src))
+    .pipe(inject(bowerFiles, {name: 'bower'}))
+    .pipe(gulp.dest('dist'));
 });
 
 // ╔════════════════════════════════╗
