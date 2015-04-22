@@ -66,7 +66,7 @@ gulp.task('html', function () {
 
 gulp.task('babel', function () {
   if (!config.ES6) {
-    console.error(chalk.red('Error: ') + 'you call babel task but ES6 option is disabled. See `config.js`.');
+    console.error(chalk.blue('Warning: ') + 'Babel ES6 option is disabled. See `config.js`.');
     return;
   }
 
@@ -113,14 +113,14 @@ gulp.task('uglify', function() {
 });
 
 gulp.task('inject', function () {
-  var target = gulp.src('index.html');
+  var target = gulp.src(getPath('index.html'));
   var src = gulp.src([getPath('css/*.css'), getPath('js/*.js'), '!' + getPath('js/*.es6.js')], {read: false});
   var bowerFiles = gulp.src(bower({env: config.env}), {read: false});
 
   return target
-    .pipe(inject(src))
+    .pipe(inject(src, {relative: true}))
     .pipe(inject(bowerFiles, {name: 'bower'}))
-    .pipe(gulp.dest('dist'));
+    .pipe(gulp.dest(config.baseDir));
 });
 
 // ╔════════════════════════════════╗
@@ -137,6 +137,9 @@ gulp.task('watch', function () {
   }, {
     files: getPath(['sass/**/*.scss']),
     tasks: ['compass']
+  }, {
+    files: ['bower.json', getPath('js/**/*.js'), '!' + getPath('js/**/*.es6.js')],
+    tasks: ['inject']
   }];
 
   // closure to pair the correct tasks and the specified files: need to be reworked with ES6 later
@@ -162,7 +165,10 @@ gulp.task('build', ['minify', 'uglify'], function () {
 gulp.task('browser-sync', function() {
   browserSync.init({
     server: {
-        baseDir: "./src"
+      baseDir: 'src',
+      routes: {
+        '/bower_components': 'bower_components'
+      }
     },
     browser: ['google chrome'],
     logPrefix: config.projectName || 'unnamed',
@@ -175,4 +181,4 @@ gulp.task('browser-sync', function() {
 // ║                Default                 ║
 // ╚════════════════════════════════╝
 
-gulp.task('default', ['browser-sync', 'watch']);
+gulp.task('default', ['babel', 'compass', 'inject', 'browser-sync', 'watch']);
