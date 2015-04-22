@@ -17,6 +17,8 @@
 // ║              Requirements              ║
 // ╚════════════════════════════════╝
 
+var path = require('path');
+
 var gulp = require('gulp');
 var babel = require('gulp-babel');
 var bower = require('main-bower-files');
@@ -37,12 +39,28 @@ var reload = browserSync.reload;
 var config = require('./config');
 
 // ╔════════════════════════════════╗
+// ║                 Tools                  ║
+// ╚════════════════════════════════╝
+
+var getPath = function (files) {
+  if (files instanceof Array) {
+    for (var i = 0; i < files.length; i++) {
+      files[i] = path.join(config.baseDir, files[i]);
+    }
+  }
+  else
+    files = path.join(config.baseDir, files);
+
+  return files;
+};
+
+// ╔════════════════════════════════╗
 // ║                 Tasks                  ║
 // ╚════════════════════════════════╝
 
 gulp.task('html', function () {
   return gulp
-    .src(['**/*.html', '!./node_modules/**'])
+    .src(getPath('**/*.html'))
     .pipe(reload({stream: true}));
 });
 
@@ -53,32 +71,32 @@ gulp.task('babel', function () {
   }
 
   return gulp
-    .src(['js/**/*.es6.js'])
+    .src(getPath('js/**/*.es6.js'))
     .pipe(plumber())
     .pipe(babel())
     .pipe(rename(function (path) {
       path.basename = path.basename.replace('.es6', '');
     }))
-    .pipe(gulp.dest('js'))
+    .pipe(gulp.dest(getPath('js')))
     .pipe(reload({stream: true}));
 });
 
 gulp.task('compass', ['html'], function () {
   return gulp
-    .src('sass/*.scss')
+    .src(getPath('sass/*.scss'))
     .pipe(plumber())
     .pipe(compass({
       config_file: 'config.rb',
-      css: 'css',
-      sass: 'sass'
+      css: getPath('css'),
+      sass: getPath('sass')
     }))
-    .pipe(gulp.dest('./css'))
+    .pipe(gulp.dest(getPath('css')))
     .pipe(reload({stream: true}));
 });
 
 gulp.task('minify', function() {
   return gulp
-    .src('css/*.css')
+    .src(getPath('css/*.css'))
     .pipe(sourcemaps.init())
     .pipe(minify())
     .pipe(sourcemaps.write('../maps'))
@@ -87,7 +105,7 @@ gulp.task('minify', function() {
 
 gulp.task('uglify', function() {
   return gulp
-    .src(['js/*.js', '!js/*.es6.js'])
+    .src([getPath('js/*.js'), '!' + getPath('js/*.es6.js')])
     .pipe(sourcemaps.init())
     .pipe(uglify())
     .pipe(sourcemaps.write('../maps'))
@@ -96,8 +114,8 @@ gulp.task('uglify', function() {
 
 gulp.task('inject', function () {
   var target = gulp.src('index.html');
-  var src = gulp.src(['css/*.css', 'js/*.js', '!js/*.es6.js'], {read: false});
-  var bowerFiles = gulp.src(bower(), {read: false});
+  var src = gulp.src([getPath('css/*.css'), getPath('js/*.js'), '!' + getPath('js/*.es6.js')], {read: false});
+  var bowerFiles = gulp.src(bower({env: config.env}), {read: false});
 
   return target
     .pipe(inject(src))
@@ -111,13 +129,13 @@ gulp.task('inject', function () {
 
 gulp.task('watch', function () {
   var watched = [{
-    files: ['**/*.html'],
+    files: getPath(['**/*.html']),
     tasks: ['html']
   }, {
-    files: ['js/**/*.es6.js'],
+    files: getPath(['js/**/*.es6.js']),
     tasks: ['babel']
   }, {
-    files: ['sass/**/*.scss'],
+    files: getPath(['sass/**/*.scss']),
     tasks: ['compass']
   }];
 
@@ -144,7 +162,7 @@ gulp.task('build', ['minify', 'uglify'], function () {
 gulp.task('browser-sync', function() {
   browserSync.init({
     server: {
-        baseDir: "./"
+        baseDir: "./src"
     },
     browser: ['google chrome'],
     logPrefix: config.projectName || 'unnamed',
